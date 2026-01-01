@@ -1,0 +1,8 @@
+
+{
+  "name": "Epix Music",
+  "description": "An AI-powered music discovery app that analyzes your facial expression to suggest unique songs and moods. It uses your camera to detect your mood and provides YouTube links for song discovery.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
