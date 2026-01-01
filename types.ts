@@ -1,13 +1,19 @@
-
 export interface Song {
   title: string;
   artist: string;
+  album?: string;
 }
 
-export interface ScanResult {
-  detectedMood: string;
-  suggestedSongs: Song[];
+export interface MoodResult {
+  mood: string;
   associatedMoods: string[];
+  playlist: Song[];
 }
 
-export type AppState = 'IDLE' | 'SCANNING' | 'LOADING' | 'RESULTS' | 'ERROR';
+export enum AppState {
+  IDLE = 'IDLE',
+  SCANNING = 'SCANNING',
+  ANALYZING = 'ANALYZING',
+  RESULTS = 'RESULTS',
+  ERROR = 'ERROR'
+}
