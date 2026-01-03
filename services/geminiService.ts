@@ -19,8 +19,9 @@ export const analyzeMoodAndGetSongs = async (base64Image: string): Promise<MoodR
   `;
 
   try {
+    // Fix: Use 'gemini-3-flash-preview' for vision and text analysis as per model selection guidelines
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: {
         parts: [
           {
@@ -53,16 +54,19 @@ export const analyzeMoodAndGetSongs = async (base64Image: string): Promise<MoodR
                   title: { type: Type.STRING, description: "Song title" },
                   artist: { type: Type.STRING, description: "Singer or Composer" },
                   album: { type: Type.STRING, description: "Movie or Album name" }
-                }
+                },
+                propertyOrdering: ["title", "artist", "album"]
               },
               description: "A list of 6 Hindi/Bollywood songs matching the mood"
             }
           },
-          required: ["mood", "associatedMoods", "playlist"]
+          required: ["mood", "associatedMoods", "playlist"],
+          propertyOrdering: ["mood", "associatedMoods", "playlist"]
         }
       },
     });
 
+    // Fix: Access .text as a property on the response object
     const text = response.text;
     if (!text) {
       throw new Error("No response text from Gemini");
