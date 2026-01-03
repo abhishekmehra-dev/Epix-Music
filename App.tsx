@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppState, MoodResult as MoodResultType } from './types';
 import CameraCapture from './components/CameraCapture';
 import MoodResult from './components/MoodResult';
@@ -9,8 +9,24 @@ const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [moodData, setMoodData] = useState<MoodResultType | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>('');
+  const [isApiKeyMissing, setIsApiKeyMissing] = useState(false);
+
+  useEffect(() => {
+    // Check if API key is configured
+    if (!process.env.API_KEY || process.env.API_KEY === 'undefined') {
+      console.warn("API_KEY is missing. Please set it in your environment variables.");
+      // We don't block the UI immediately, but we track it for error handling
+      setIsApiKeyMissing(true);
+    }
+  }, []);
 
   const handleCapture = async (imageSrc: string) => {
+    if (isApiKeyMissing) {
+      setErrorMsg("The developer hasn't configured the API Key yet. Please add API_KEY to your environment variables.");
+      setAppState(AppState.ERROR);
+      return;
+    }
+
     setAppState(AppState.ANALYZING);
     try {
       const result = await analyzeMoodAndGetSongs(imageSrc);
@@ -56,6 +72,11 @@ const App: React.FC = () => {
               Epix Music
             </span>
           </div>
+          <div className="hidden md:block">
+            <span className="text-xs font-medium px-3 py-1 rounded-full bg-white/5 border border-white/10 text-gray-400">
+              Free Public Access
+            </span>
+          </div>
         </header>
 
         {/* Main Content Area */}
@@ -63,6 +84,9 @@ const App: React.FC = () => {
           
           {appState === AppState.IDLE && (
             <div className="text-center max-w-2xl animate-fadeIn">
+              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-medium">
+                No Login Required • AI-Powered
+              </div>
               <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight">
                 Bollywood beats for <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-500">
@@ -79,6 +103,12 @@ const App: React.FC = () => {
                 <span className="mr-2 text-lg">Scan My Vibe</span>
                 <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
               </button>
+              
+              {isApiKeyMissing && (
+                <p className="mt-8 text-amber-400 text-xs bg-amber-400/10 p-2 rounded-lg border border-amber-400/20">
+                  ⚠️ Developer Note: Your API Key is not detected in environment variables.
+                </p>
+              )}
             </div>
           )}
 
@@ -123,7 +153,7 @@ const App: React.FC = () => {
         
         {/* Footer */}
         <footer className="mt-12 text-center text-gray-600 text-sm py-4">
-          <p>© {new Date().getFullYear()} Epix Music. Powered by Gemini.</p>
+          <p>© {new Date().getFullYear()} Epix Music. No login required. Powered by Gemini.</p>
         </footer>
       </div>
     </div>

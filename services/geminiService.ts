@@ -1,9 +1,10 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { MoodResult } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
 export const analyzeMoodAndGetSongs = async (base64Image: string): Promise<MoodResult> => {
+  // Initialize AI client inside the call to ensure process.env.API_KEY is properly scoped
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  
   // Remove header if present (data:image/jpeg;base64,)
   const cleanBase64 = base64Image.replace(/^data:image\/(png|jpeg|jpg);base64,/, "");
 
@@ -19,7 +20,6 @@ export const analyzeMoodAndGetSongs = async (base64Image: string): Promise<MoodR
   `;
 
   try {
-    // Fix: Use 'gemini-3-flash-preview' for vision and text analysis as per model selection guidelines
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: {
@@ -40,7 +40,7 @@ export const analyzeMoodAndGetSongs = async (base64Image: string): Promise<MoodR
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            mood: { type: Type.STRING, description: "The primary detected mood, capitalized (e.g. 'Pleasant')" },
+            mood: { type: Type.STRING, description: "The primary detected mood, capitalized" },
             associatedMoods: {
               type: Type.ARRAY,
               items: { type: Type.STRING },
@@ -66,7 +66,6 @@ export const analyzeMoodAndGetSongs = async (base64Image: string): Promise<MoodR
       },
     });
 
-    // Fix: Access .text as a property on the response object
     const text = response.text;
     if (!text) {
       throw new Error("No response text from Gemini");
